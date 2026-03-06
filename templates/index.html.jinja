@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <title>Rootstock</title>
+    </head>
+    <body class="bg-gray-50 min-h-screen py-8">
+        <div class="max-w-4xl mx-auto px-4">
+            <h1 class="text-3xl font-bold text-gray-800 mb-8 text-center">Rootstock Cluster Configurations</h1>
+
+            {% for manifest in manifests %}
+            <details class="mb-4 bg-white rounded-lg shadow-md overflow-hidden group">
+                <summary class="px-6 py-4 cursor-pointer bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <span class="text-xl font-semibold text-gray-800">{{ manifest.cluster }}</span>
+                        <span class="text-sm text-gray-500">v{{ manifest.rootstock_version }}</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="text-sm text-gray-600">{{ manifest.environments | length }} environments</span>
+                        <span class="text-gray-400 group-open:rotate-90 transition-transform">▶</span>
+                    </div>
+                </summary>
+
+                <div class="px-6 py-4 border-t border-gray-200">
+                    <div class="mb-4 text-sm text-gray-600 grid grid-cols-2 gap-2">
+                        <div><span class="font-medium">Root:</span> {{ manifest.root }}</div>
+                        <div><span class="font-medium">Python:</span> {{ manifest.python_version }}</div>
+                        <div><span class="font-medium">Maintainer:</span> {{ manifest.maintainer.name }} ({{ manifest.maintainer.email }})</div>
+                        <div><span class="font-medium">Last Updated:</span> {{ manifest.last_updated }}</div>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Environments</h3>
+
+                    {% for env_name, env in manifest.environments.items() %}
+                    <details class="mb-3 border border-gray-200 rounded-lg overflow-hidden">
+                        <summary class="px-4 py-3 cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <span class="font-medium text-gray-700">{{ env_name }}</span>
+                                {% if env.status == 'ready' %}
+                                <span class="px-2 py-0.5 text-xs font-medium bg-green-100 text-green-700 rounded-full">ready</span>
+                                {% else %}
+                                <span class="px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-700 rounded-full">{{ env.status }}</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-gray-400 text-sm">▼</span>
+                        </summary>
+
+                        <div class="px-4 py-3 bg-white text-sm">
+                            <div class="grid grid-cols-2 gap-2 mb-3 text-gray-600">
+                                <div><span class="font-medium">Built:</span> {{ env.built_at }}</div>
+                                <div><span class="font-medium">Python Requires:</span> {{ env.python_requires }}</div>
+                            </div>
+
+                            {% if env.dependencies %}
+                            <div class="mb-3">
+                                <h4 class="font-medium text-gray-700 mb-2">Dependencies</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    {% for pkg, version in env.dependencies.items() %}
+                                    <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs font-mono">{{ pkg }}=={{ version }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            {% if env.checkpoints %}
+                            <div>
+                                <h4 class="font-medium text-gray-700 mb-2">Checkpoints</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    {% for checkpoint in env.checkpoints %}
+                                    <span class="px-2 py-1 bg-purple-50 text-purple-700 rounded text-xs">{{ checkpoint }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </details>
+                    {% endfor %}
+                </div>
+            </details>
+            {% else %}
+            <div class="text-center text-gray-500 py-8">No cluster configurations found.</div>
+            {% endfor %}
+        </div>
+    </body>
+</html>

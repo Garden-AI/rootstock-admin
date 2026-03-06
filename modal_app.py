@@ -11,7 +11,7 @@ vol = modal.Volume.from_name("rootstock-admin", create_if_missing=True)
 
 
 @app.function(volumes={"/data": vol})
-@modal.fastapi_endpoint(method="POST")
+@modal.fastapi_endpoint(method="POST", requires_proxy_auth=True)
 def manifest(manifest: dict):
     import json
 
@@ -19,35 +19,6 @@ def manifest(manifest: dict):
     with open(f"/data/{name}.json", "w") as f:
         json.dump(manifest, f)
     return manifest
-
-
-fake_manifest = {
-    "schema_version": "1",
-    "cluster": "della",
-    "root": "/scratch/gpfs/SHARED/rootstock",
-    "maintainer": {"name": "Hayden Holbrook", "email": "hholbrook@uchicago.edu"},
-    "rootstock_version": "0.5.0",
-    "python_version": "3.10.19",
-    "last_updated": "2026-03-05T14:30:00Z",
-    "environments": {
-        "mace_env": {
-            "status": "ready",
-            "built_at": "2026-03-01T12:05:00Z",
-            "source_hash": "sha256:abc123...",
-            "python_requires": ">=3.10",
-            "dependencies": {"mace-torch": "0.3.6", "torch": "2.2.0", "ase": "3.23.0"},
-            "checkpoints": ["small", "medium", "large"],
-        },
-        "uma_env": {
-            "status": "ready",
-            "built_at": "2026-03-03T09:00:00Z",
-            "source_hash": "sha256:def456...",
-            "python_requires": ">=3.10",
-            "dependencies": {"fairchem-core": "1.2.0", "torch": "2.2.0"},
-            "checkpoints": ["uma-s-1p1"],
-        },
-    },
-}
 
 
 @app.function(volumes={"/data": vol})

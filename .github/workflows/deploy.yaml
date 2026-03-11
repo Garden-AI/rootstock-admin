@@ -19,7 +19,8 @@ jobs:
       MODAL_ENVIRONMENT: |-
         ${{ case(
           github.ref_name == 'main', 'prod',
-          github.ref_name == 'dev', 'dev'
+          github.ref_name == 'dev', 'dev',
+          'dev'
         ) }}
     steps:
       - name: Checkout code

@@ -11,12 +11,16 @@ on:
 
 jobs:
   Deploy:
-    if: github.event.pull_request.merged == true || github.ref_name == "main"
+    if: (github.ref_name == 'dev' && github.event.pull_request.merged == true) || github.ref_name == 'main'
     runs-on: ubuntu-latest
     env:
       MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
       MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
-      MODAL_ENVIRONMENT: ${{ case(github.ref_name == "main", "prod", github.ref_name == "dev", "dev") }}
+      MODAL_ENVIRONMENT: |-
+        ${{ case(
+          github.ref_name == 'main', 'prod',
+          github.ref_name == 'dev', 'dev'
+        ) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6

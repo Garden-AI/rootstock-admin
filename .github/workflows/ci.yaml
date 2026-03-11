@@ -4,13 +4,14 @@ on:
     branches:
       - main
       - dev
-  merge:
+  pull_request:
+    types: closed
     branches:
-      - main
       - dev
 
 jobs:
   Deploy:
+    if: github.event.pull_request.merged == true || github.ref_name == "main"
     runs-on: ubuntu-latest
     env:
       MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}

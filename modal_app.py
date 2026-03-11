@@ -1,4 +1,5 @@
 import modal
+import os
 
 app = modal.App("rootstock-admin")
 app.image = (
@@ -7,7 +8,8 @@ app.image = (
     .add_local_dir("./templates/", remote_path="/templates")
 )
 
-vol = modal.Volume.from_name("rootstock-admin", create_if_missing=True)
+env = os.environ.get("MODAL_ENVIRONMENT", "dev")
+vol = modal.Volume.from_name(f"rootstock-admin-{env}", create_if_missing=True)
 
 
 @app.function(volumes={"/data": vol})

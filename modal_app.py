@@ -15,9 +15,12 @@ vol = modal.Volume.from_name("rootstock-admin", create_if_missing=True)
 def manifest(manifest: dict):
     import json
 
+    vol.reload()
     name = manifest.get("cluster")
     with open(f"/data/{name}.json", "w") as f:
         json.dump(manifest, f)
+
+    vol.commit()
     return manifest
 
 
@@ -25,9 +28,12 @@ def manifest(manifest: dict):
 @modal.fastapi_endpoint()
 def dashboard():
     import json
+    from datetime import datetime
     from pathlib import Path
     from fastapi.responses import HTMLResponse
     from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+    vol.reload()
 
     env = Environment(
         loader=FileSystemLoader("/templates"),
@@ -40,6 +46,13 @@ def dashboard():
     manifests = []
     for mf in manifest_files:
         with open(mf, "r") as f:
-            manifests.append(json.load(f))
+            data = json.load(f)
+            if "last_updated" in data:
+                try:
+                    dt = datetime.fromisoformat(data["last_updated"])
+                    data["last_updated"] = dt.strftime("%b %d, %Y")
+                except ValueError:
+                    pass
+            manifests.append(data)
 
     return HTMLResponse(t.render(manifests=manifests))

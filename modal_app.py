@@ -22,19 +22,27 @@ def manifest(manifest: dict):
     return manifest
 
 
-@app.function(volumes={"/data": vol})
-@modal.fastapi_endpoint()
+@app.function(volumes={"/data": vol}, min_containers=1)
+@modal.asgi_app()
 def dashboard():
-    import json
-    from pathlib import Path
+    from fastapi import FastAPI
+    from fastapi.middleware.cors import CORSMiddleware
 
-    vol.reload()
+    web_app = FastAPI()
+    web_app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["GET"],
+        allow_headers=["*"],
+    )
 
-    manifest_path = Path("/data")
-    manifest_files = manifest_path.glob("*.json")
-    manifests = []
-    for mf in manifest_files:
-        with open(mf, "r") as f:
-            manifests.append(json.load(f))
+    @web_app.get("/")
+    def get_manifests():
+        import json
+        from pathlib import Path
 
-    return {"manifests": manifests}
+        vol.reload()
+        manifests = [json.loads(p.read_text()) for p in Path("/data").glob("*.json")]
+        return {"manifests": manifests}
+
+    return web_app
